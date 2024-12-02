@@ -12,7 +12,7 @@ import aoc.AoC {
     time: \{} -> Utc.now {} |> Task.map Utc.toMillisSinceEpoch,
 }
 
-part1Example =
+example =
     """
     3   4
     4   3
@@ -44,8 +44,25 @@ part1 = \input ->
         Err msg ->
             Err msg
 
-expect part1 part1Example == Ok "Total distance: 11"
+expect part1 example == Ok "Total distance: 11"
 expect part1 "1   2\nblah" == Err "Failed to parse line: blah"
+
+part2 : Str -> Result Str Str
+part2 = \input ->
+    when parseInput input is
+        Ok lists ->
+            total = List.walk lists.left 0 \state, leftItem ->
+                countInRightList = List.countIf lists.right \r -> r == leftItem
+                state + leftItem * (Num.toI64 countInRightList)
+
+            Ok "Similarity score: $(Num.toStr total)"
+
+        Err msg ->
+            Err msg
+
+expect
+    out = part2 example
+    out == Ok "Similarity score: 31"
 
 # Parse the input into a record of {left, right} numbers
 parseInput : Str -> Result { left : List I64, right : List I64 } Str
@@ -65,5 +82,3 @@ parseInput = \input ->
         else
             Ok state
 
-part2 : Str -> Result Str Str
-part2 = \_ -> Ok ""
